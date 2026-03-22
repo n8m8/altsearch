@@ -10,14 +10,7 @@ const CONFIG = {
     "amazon", "walmart", "target", "petco", "petsmart", "chewy",
     "costco", "samsclub", "ebay", "alibaba", "aliexpress",
     "bestbuy", "homedepot", "lowes", "walgreens", "cvs"
-  ],
-  categories: {
-    pet_supplies: ["petco", "petsmart", "chewy", "petland"],
-    electronics: ["bestbuy", "newegg", "microcenter"],
-    food: ["kroger", "safeway", "albertsons", "wholefoodsmarket"],
-    home_goods: ["homedepot", "lowes", "menards", "acehardware"],
-    clothing: ["gap", "oldnavy", "hm", "zara", "uniqlo"]
-  }
+  ]
 };
 
 async function braveSearch(query, count, env, blocklist = []) {
@@ -247,8 +240,7 @@ async function handleRequest(request, env) {
   if (url.pathname === "/api/config" && request.method === "GET") {
     return new Response(JSON.stringify({
       default_blocklist: CONFIG.default_blocklist,
-      max_results: CONFIG.max_results,
-      categories: CONFIG.categories
+      max_results: CONFIG.max_results
     }), {
       headers: { "Content-Type": "application/json", ...corsHeaders(origin) }
     });
