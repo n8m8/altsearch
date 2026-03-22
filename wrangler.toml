@@ -7,5 +7,5 @@ compatibility_date = "2024-01-01"
 # wrangler secret put OPENROUTER_API_KEY
 # wrangler secret put BRAVE_API_KEY
 
-[vars]
-ALLOWED_ORIGIN = "https://nataliefloraa.com"
+# [vars]
+# ALLOWED_ORIGIN = "https://yourdomain.com"  # Optional: restrict CORS to specific domain

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Deploy Small Business Finder to Cloudflare Workers
+# Deploy Altsearch to Cloudflare Workers
 
 echo "🚀 Deploying to Cloudflare Workers..."
 
@@ -9,10 +9,11 @@ wrangler deploy
 echo ""
 echo "✅ Deployed! Now set your secrets:"
 echo ""
-echo "Run these commands:"
+echo "Run these commands to set your API keys:"
 echo "  wrangler secret put OPENROUTER_API_KEY"
-echo "  (paste: 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)"
-echo ""
 echo "  wrangler secret put BRAVE_API_KEY"
-echo "  (paste: BSAdmh5EzSvMrBlpcX79n9FdjAu7I_K)"
+echo ""
+echo "Get your API keys from:"
+echo "  - OpenRouter: https://openrouter.ai/"
+echo "  - Brave Search: https://brave.com/search/api/"
 echo ""

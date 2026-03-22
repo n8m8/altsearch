@@ -1,133 +1,210 @@
-# Small Business Finder - Cloudflare Workers
+# 🍋 Altsearch
 
-Serverless single-page webapp that finds small business alternatives to major retailers. Secure deployment with API keys protected in Cloudflare Workers.
+Find independent online retailers as alternatives to major chains. Powered by AI and Brave Search.
+
+## Features
+
+- 🔍 **Smart Search** - AI analyzes web results to find genuine small businesses
+- 🌐 **Online Focus** - Filters for stores with e-commerce capabilities
+- 🚫 **Blocklist** - Automatically excludes major chains (Amazon, Walmart, etc.)
+- 📍 **Location Aware** - Prioritizes nearby options when location provided
+- ⚡ **Fast** - Server-sent events for real-time progress updates
+- 🔒 **Secure** - All API keys server-side, never exposed to client
+
+## Tech Stack
+
+- **Frontend:** Brutalist single-page app (inline HTML/CSS/JS)
+- **Backend:** Cloudflare Workers (serverless, global edge)
+- **AI:** NVIDIA Nemotron 3 Super via OpenRouter (free tier)
+- **Search:** Brave Search API
+- **Streaming:** Server-Sent Events for real-time updates
 
 ## Quick Deploy
 
+### Prerequisites
+
+- [Cloudflare account](https://dash.cloudflare.com/sign-up)
+- [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/install-and-update/)
+- [OpenRouter API key](https://openrouter.ai/) (free)
+- [Brave Search API key](https://brave.com/search/api/)
+
+### Setup
+
+1. **Clone and install:**
 ```bash
-cd webapp
-./deploy.sh
+git clone https://github.com/yourusername/altsearch.git
+cd altsearch
+npm install -g wrangler  # If not installed
 ```
 
-Then set secrets:
+2. **Configure secrets:**
 ```bash
+# Copy example env file
+cp .env.example .env
+
+# Edit .env with your API keys
+# OPENROUTER_API_KEY=your_key_here
+# BRAVE_API_KEY=your_key_here
+```
+
+3. **Deploy:**
+```bash
+wrangler deploy
+
+# Set secrets (will prompt for values)
 wrangler secret put OPENROUTER_API_KEY
-# Paste: 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
-
 wrangler secret put BRAVE_API_KEY
-# Paste: BSAdmh5EzSvMrBlpcX79n9FdjAu7I_K
 ```
 
-## What It Does
+4. **Visit your worker URL:**
+```
+https://small-biz-finder.your-subdomain.workers.dev
+```
 
-1. **User searches** for a product (e.g., "zupreem bird food")
-2. **Cloudflare Worker** receives request (API keys stay secure)
-3. **AI (Nemotron)** uses Brave Search to research retailers
-4. **Returns** curated list of small business alternatives
+## Local Development
 
-## Architecture
+```bash
+# Create .env with your API keys
+cp .env.example .env
 
-- **Frontend:** Single HTML page (inline in worker.js)
-- **Backend:** Cloudflare Worker (serverless, global edge network)
-- **AI:** OpenRouter API (nvidia/nemotron-3-super-120b-a12b:free)
-- **Search:** Brave Search API (tool calling)
-- **Secrets:** Stored in Cloudflare (never exposed to client)
+# Start dev server (reads from .env automatically)
+wrangler dev
 
-## Security
+# Open http://localhost:8787
+```
 
-✅ API keys stored as Cloudflare secrets  
-✅ Server-side AI and search API calls only  
-✅ CORS headers configured  
-✅ Input validation (query length, blocklist size)  
-✅ Rate limiting via Cloudflare (automatic)  
-✅ No database required  
+## Configuration
 
-## API Endpoints
+### Custom Domain
+
+Edit `wrangler.toml`:
+```toml
+routes = [
+  { pattern = "altsearch.yourdomain.com", custom_domain = true }
+]
+```
+
+### Adjust Blocklist
+
+Edit `worker.js`:
+```javascript
+default_blocklist: [
+  "amazon", "walmart", "target", // Add more here
+]
+```
+
+## API Documentation
 
 ### GET /
+
 Single-page webapp interface
 
 ### GET /api/config
-Returns public config (blocklist, categories)
 
-### POST /api/search
+Returns public configuration:
 ```json
 {
-  "query": "product name",
+  "default_blocklist": ["amazon", "walmart", ...],
+  "max_results": 5,
+  "categories": { ... }
+}
+```
+
+### POST /api/search-stream
+
+Server-sent events endpoint. Streams progress updates:
+
+**Request:**
+```json
+{
+  "query": "bird food",
   "location": "Austin, TX",
   "blocklist": ["amazon", "walmart"],
   "max_results": 5
 }
 ```
 
-Returns:
-```json
-{
-  "results": [
-    {
-      "name": "Retailer Name",
-      "url": "https://...",
-      "description": "...",
-      "location": "City, State"
-    }
-  ],
-  "query": "product name",
-  "count": 1
-}
+**Response (SSE stream):**
+```
+event: progress
+data: {"step":1,"message":"Searching the web..."}
+
+event: progress
+data: {"step":2,"message":"Found 20 potential retailers"}
+
+event: progress
+data: {"step":3,"message":"Reasoning...","partialContent":"..."}
+
+event: result
+data: {"results":[...],"summary":"...","quality":"good"}
 ```
 
-## Local Development
+## Cost Estimate
 
-```bash
-wrangler dev
-```
+- **Cloudflare Workers:** Free tier (100k req/day)
+- **OpenRouter (Nemotron):** Free
+- **Brave Search:** 2,000 free queries/month, then $5/1k queries
 
-Visit http://localhost:8787
+**Typical usage:** $0-5/month for small-scale deployment
 
-## Custom Domain
+## Security
 
-Edit `wrangler.toml`:
-```toml
-routes = [
-  { pattern = "finder.nataliefloraa.com", custom_domain = true }
-]
-```
+See [SECURITY.md](SECURITY.md) for full security review.
 
-Then deploy:
-```bash
-wrangler deploy
-```
+**Highlights:**
+- ✅ No hardcoded secrets
+- ✅ API keys stored in Cloudflare Workers secrets
+- ✅ Input validation (200 char limit, max 10 results)
+- ✅ CORS properly configured
+- ✅ No user data stored
+- ✅ Transparent AI disclosure in UI
 
-## Cost
-
-- Cloudflare Workers: 100k requests/day free
-- OpenRouter (Nemotron free model): $0
-- Brave Search API: Pay per search (check pricing)
-
-Estimated cost: ~$0-5/month for moderate use
+**Recommended:** Add rate limiting in Cloudflare dashboard (30 req/min per IP)
 
 ## Monitoring
 
-View logs:
+**View logs:**
 ```bash
 wrangler tail
 ```
 
-Check analytics in Cloudflare dashboard
+**Analytics:**
+- Cloudflare Workers dashboard
+- OpenRouter usage dashboard
+- Brave Search API dashboard
 
-## Embed on Your Website
+## Embed Options
 
-Add to any page:
+### iFrame
 ```html
-<iframe src="https://small-biz-finder.your-subdomain.workers.dev" 
+<iframe src="https://your-worker.workers.dev" 
         width="100%" height="800px" 
-        style="border: none; border-radius: 12px;">
+        style="border: 4px solid #2b1f0f;">
 </iframe>
 ```
 
-Or link directly:
+### Direct Link
 ```html
-<a href="https://small-biz-finder.your-subdomain.workers.dev">
-  Find Small Business Alternatives
+<a href="https://your-worker.workers.dev">
+  🍋 Find Small Business Alternatives
 </a>
 ```
+
+## Contributing
+
+Private repo for now. Open-source release coming soon.
+
+## License
+
+MIT License - see [LICENSE](LICENSE)
+
+## Acknowledgments
+
+- **AI Model:** NVIDIA Nemotron 3 Super (via OpenRouter)
+- **Search:** Brave Search API
+- **Hosting:** Cloudflare Workers
+- **Design:** Brutalist web design principles
+
+---
+
+**Questions?** Open an issue or contact [@nataliefloraa](https://github.com/n8m8)

@@ -118,11 +118,15 @@ Before publishing to GitHub:
 - [x] No hardcoded secrets
 - [x] Environment variables documented
 - [x] Security review completed
-- [ ] Add LICENSE file (MIT recommended)
-- [ ] Add README with setup instructions
-- [ ] Add example .env.example file
-- [ ] Document required Wrangler secrets
-- [ ] Add deployment instructions
+- [x] Add LICENSE file (MIT)
+- [x] Add README with setup instructions
+- [x] Add example .env.example file
+- [x] Document required Wrangler secrets
+- [x] Add deployment instructions
+- [x] Remove secrets from deploy.sh
+- [x] Make ALLOWED_ORIGIN configurable (not hardcoded)
+- [x] Verify .env in .gitignore
+- [x] Verify no secrets in git history
 
 ## Example .env.example
 
