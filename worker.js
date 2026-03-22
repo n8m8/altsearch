@@ -231,11 +231,8 @@ async function handleRequest(request, env) {
     return new Response(null, { headers: corsHeaders(origin) });
   }
   
-  if (url.pathname === "/" && request.method === "GET") {
-    return new Response(HTML, {
-      headers: { "Content-Type": "text/html", ...corsHeaders(origin) }
-    });
-  }
+  // Frontend served separately - use index.html
+  // For dev: python3 -m http.server 8000
   
   if (url.pathname === "/api/config" && request.method === "GET") {
     return new Response(JSON.stringify({
