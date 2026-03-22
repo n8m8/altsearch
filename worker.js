@@ -21,25 +21,27 @@ const CONFIG = {
 };
 
 async function braveSearch(query, count, env, blocklist = []) {
-  // Add negative search terms for blocklisted companies
+  // Don't use negative search terms in Brave (causes 422 errors)
+  // Let AI filter the blocklist instead
   let searchQuery = query;
-  if (blocklist && blocklist.length > 0) {
-    const negativeTerms = blocklist.map(b => `-${b}`).join(' ');
-    searchQuery = `${query} ${negativeTerms}`;
-  }
   
-  const response = await fetch(
-    `https://api.search.brave.com/res/v1/web/search?q=${encodeURIComponent(searchQuery)}&count=${count}`,
-    {
-      headers: {
-        "Accept": "application/json",
-        "X-Subscription-Token": env.BRAVE_API_KEY
-      }
+  const url = `https://api.search.brave.com/res/v1/web/search?q=${encodeURIComponent(searchQuery)}&count=${count}`;
+  
+  const response = await fetch(url, {
+    headers: {
+      "Accept": "application/json",
+      "X-Subscription-Token": env.BRAVE_API_KEY
     }
-  );
+  });
   
   if (!response.ok) {
-    throw new Error(`Brave Search failed: ${response.status}`);
+    const errorBody = await response.text();
+    console.error(`Brave Search 422 details:`, { 
+      query: searchQuery, 
+      queryLength: searchQuery.length,
+      error: errorBody 
+    });
+    throw new Error(`Brave Search failed: ${response.status} - ${errorBody}`);
   }
   
   const data = await response.json();
